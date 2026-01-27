@@ -16,10 +16,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // 统一处理邮箱，防止空格或大小写导致匹配失败
     const cleanEmail = email.trim().toLowerCase();
-
-    // 读取全局用户数据库
     const storedUsersJson = localStorage.getItem('mindshelf_users');
     let storedUsers = [];
     try {
@@ -29,113 +26,111 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     }
 
     if (isLogin) {
-      // 登录逻辑
       const user = storedUsers.find((u: any) => u.email === cleanEmail && u.password === password);
       if (user) {
         onLogin({ id: user.id, name: user.name, email: user.email });
       } else {
-        setError('邮箱或密码错误，请检查。');
+        setError('Invalid email or password. Please try again.');
       }
     } else {
-      // 注册逻辑
       if (!cleanEmail || !password) {
-        setError('请填写完整的注册信息。');
+        setError('Please fill in all required fields.');
         return;
       }
-      
       if (storedUsers.some((u: any) => u.email === cleanEmail)) {
-        setError('该邮箱已被注册，请直接登录。');
+        setError('This email is already registered. Please sign in instead.');
         return;
       }
-      
       const newUser = { 
         id: Date.now().toString(), 
         name: name.trim() || 'Reader', 
         email: cleanEmail, 
         password 
       };
-      
       const updatedUsers = [...storedUsers, newUser];
       localStorage.setItem('mindshelf_users', JSON.stringify(updatedUsers));
-      
-      // 自动登录
       onLogin({ id: newUser.id, name: newUser.name, email: newUser.email });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4 font-sans">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-zinc-100">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-zinc-900 text-white rounded-xl mb-4 text-sm font-bold">
-            MS
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4 font-sans text-zinc-900">
+      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl shadow-zinc-200/50 border border-zinc-100">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-zinc-900 text-white rounded-2xl mb-6 shadow-xl shadow-zinc-900/20">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">
-            {isLogin ? '欢迎回来' : '加入 MindShelf'}
+          <h2 className="text-3xl font-extrabold tracking-tight">
+            {isLogin ? 'Welcome back' : 'Create an account'}
           </h2>
-          <p className="text-zinc-500 text-sm mt-1">
-            {isLogin ? '继续你的知识探索之旅' : '开启你的私人知识库'}
+          <p className="text-zinc-500 mt-2 text-sm">
+            {isLogin ? 'Sign in to continue your reading journey' : 'Start building your personal knowledge base'}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100">
+          <div className="mb-6 p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100 flex items-center gap-3">
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
             <div>
-              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">姓名</label>
+              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">Full Name</label>
               <input 
                 type="text" 
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
-                placeholder="你的称呼"
+                className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-4 focus:ring-zinc-900/5 focus:border-zinc-900 focus:outline-none transition-all placeholder:text-zinc-300"
+                placeholder="Alex Johnson"
               />
             </div>
           )}
           <div>
-            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">邮箱</label>
+            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">Email Address</label>
             <input 
               required
               type="email" 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
-              placeholder="you@example.com"
+              className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-4 focus:ring-zinc-900/5 focus:border-zinc-900 focus:outline-none transition-all placeholder:text-zinc-300"
+              placeholder="alex@example.com"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">密码</label>
+            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 px-1">Password</label>
             <input 
               required
               type="password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
+              className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-4 focus:ring-zinc-900/5 focus:border-zinc-900 focus:outline-none transition-all placeholder:text-zinc-300"
               placeholder="••••••••"
             />
           </div>
           <button 
             type="submit" 
-            className="w-full py-3 bg-zinc-900 text-white font-bold rounded-lg hover:bg-zinc-800 transition-all shadow-lg active:scale-[0.98]"
+            className="w-full py-4 bg-zinc-900 text-white font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-lg active:scale-[0.99] text-sm uppercase tracking-widest"
           >
-            {isLogin ? '登录' : '注册'}
+            {isLogin ? 'Sign In' : 'Get Started'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center pt-6 border-t border-zinc-50">
           <button 
             onClick={() => {
               setIsLogin(!isLogin);
               setError('');
             }}
-            className="text-sm text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
+            className="text-sm text-zinc-500 hover:text-zinc-900 font-semibold transition-colors"
           >
-            {isLogin ? "还没有账号？点击注册" : "已有账号？点击登录"}
+            {isLogin ? "New to MindShelf? Create account" : "Already have an account? Sign in"}
           </button>
         </div>
       </div>

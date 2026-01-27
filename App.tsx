@@ -7,8 +7,9 @@ import Onboarding from './components/Onboarding';
 import Auth from './components/Auth';
 
 const DEFAULT_BOOKS: Book[] = [
-  { id: '1', title: 'Deep Work', author: 'Cal Newport', coverUrl: 'https://picsum.photos/seed/deepwork/200/300', progress: 60 },
-  { id: '2', title: 'Atomic Habits', author: 'James Clear', coverUrl: 'https://picsum.photos/seed/atomic/200/300', progress: 100 },
+  { id: '1', title: 'Thinking, Fast and Slow', author: 'Daniel Kahneman', coverUrl: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200&h=300', progress: 45 },
+  { id: '2', title: 'Atomic Habits', author: 'James Clear', coverUrl: 'https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&q=80&w=200&h=300', progress: 100 },
+  { id: '3', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', coverUrl: 'https://images.unsplash.com/photo-1543005814-14b24e82ffbb?auto=format&fit=crop&q=80&w=200&h=300', progress: 15 },
 ];
 
 const App: React.FC = () => {
@@ -20,7 +21,6 @@ const App: React.FC = () => {
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   const [hasLoadedUserData, setHasLoadedUserData] = useState(false);
 
-  // 1. 初始化用户 Session
   useEffect(() => {
     const savedSession = localStorage.getItem('mindshelf_session');
     if (savedSession) {
@@ -35,24 +35,18 @@ const App: React.FC = () => {
     setIsAppInitialized(true);
   }, []);
 
-  // 2. 当用户变更时，加载该用户的特定数据
   useEffect(() => {
     if (currentUser) {
       setHasLoadedUserData(false);
-      
       const savedBooks = localStorage.getItem(`mindshelf_books_${currentUser.id}`);
       const savedNotes = localStorage.getItem(`mindshelf_notes_${currentUser.id}`);
-      
       try {
         setBooks(savedBooks ? JSON.parse(savedBooks) : DEFAULT_BOOKS);
         setNotes(savedNotes ? JSON.parse(savedNotes) : []);
       } catch (e) {
-        console.error("Failed to load user data", e);
         setBooks(DEFAULT_BOOKS);
         setNotes([]);
       }
-      
-      // 标记数据加载完成，允许后续的写入操作
       setHasLoadedUserData(true);
     } else {
       setHasLoadedUserData(false);
@@ -61,7 +55,6 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
-  // 3. 只有在数据加载完成后，才监听状态变化并同步到 LocalStorage
   useEffect(() => {
     if (currentUser && hasLoadedUserData) {
       localStorage.setItem(`mindshelf_books_${currentUser.id}`, JSON.stringify(books));
@@ -122,7 +115,7 @@ const App: React.FC = () => {
   };
 
   if (!isAppInitialized) {
-    return <div className="h-screen flex items-center justify-center bg-zinc-50 font-medium text-zinc-400">Loading Application...</div>;
+    return <div className="h-screen flex items-center justify-center bg-zinc-50 font-medium text-zinc-400">Loading MindShelf...</div>;
   }
 
   if (!currentUser) {
@@ -130,7 +123,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-zinc-50 overflow-hidden">
+    <div className="flex h-screen bg-zinc-50 overflow-hidden font-sans">
       <Sidebar 
         currentView={view} 
         setView={setView} 
@@ -163,12 +156,12 @@ const App: React.FC = () => {
 
         {!activeBook && view === 'editor' && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-400">
-            <p>Please select a book from the shelf to start writing notes.</p>
+            <p className="text-lg">Select a title from your shelf to begin.</p>
             <button 
               onClick={() => setView('shelf')}
-              className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors"
+              className="mt-6 px-6 py-2 bg-zinc-900 text-white rounded-full hover:bg-zinc-800 transition-all shadow-md"
             >
-              Go to Shelf
+              Back to Library
             </button>
           </div>
         )}
