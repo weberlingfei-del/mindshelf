@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User } from '../types';
 
@@ -17,95 +16,126 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    // For this MVP, we use localStorage to mock a backend database of users
-    const storedUsers = JSON.parse(localStorage.getItem('mindshelf_users') || '[]');
+    // 统一处理邮箱，防止空格或大小写导致匹配失败
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 读取全局用户数据库
+    const storedUsersJson = localStorage.getItem('mindshelf_users');
+    let storedUsers = [];
+    try {
+      storedUsers = storedUsersJson ? JSON.parse(storedUsersJson) : [];
+    } catch (err) {
+      storedUsers = [];
+    }
 
     if (isLogin) {
-      const user = storedUsers.find((u: any) => u.email === email && u.password === password);
+      // 登录逻辑
+      const user = storedUsers.find((u: any) => u.email === cleanEmail && u.password === password);
       if (user) {
         onLogin({ id: user.id, name: user.name, email: user.email });
       } else {
-        setError('Invalid email or password.');
+        setError('邮箱或密码错误，请检查。');
       }
     } else {
-      if (storedUsers.some((u: any) => u.email === email)) {
-        setError('Email already exists.');
+      // 注册逻辑
+      if (!cleanEmail || !password) {
+        setError('请填写完整的注册信息。');
         return;
       }
-      const newUser = { id: Date.now().toString(), name, email, password };
-      storedUsers.push(newUser);
-      localStorage.setItem('mindshelf_users', JSON.stringify(storedUsers));
+      
+      if (storedUsers.some((u: any) => u.email === cleanEmail)) {
+        setError('该邮箱已被注册，请直接登录。');
+        return;
+      }
+      
+      const newUser = { 
+        id: Date.now().toString(), 
+        name: name.trim() || 'Reader', 
+        email: cleanEmail, 
+        password 
+      };
+      
+      const updatedUsers = [...storedUsers, newUser];
+      localStorage.setItem('mindshelf_users', JSON.stringify(updatedUsers));
+      
+      // 自动登录
       onLogin({ id: newUser.id, name: newUser.name, email: newUser.email });
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-zinc-50 flex items-center justify-center p-4 z-[100]">
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-      
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-zinc-100 p-10 relative overflow-hidden">
-        <div className="mb-10 text-center">
-          <div className="w-12 h-12 bg-zinc-900 text-white rounded-xl flex items-center justify-center text-xl font-bold mx-auto mb-6">MS</div>
-          <h2 className="text-3xl font-bold text-zinc-900 tracking-tight">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4 font-sans">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-zinc-100">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-zinc-900 text-white rounded-xl mb-4 text-sm font-bold">
+            MS
+          </div>
+          <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">
+            {isLogin ? '欢迎回来' : '加入 MindShelf'}
           </h2>
-          <p className="text-zinc-500 mt-2">Enter your details to continue to MindShelf</p>
+          <p className="text-zinc-500 text-sm mt-1">
+            {isLogin ? '继续你的知识探索之旅' : '开启你的私人知识库'}
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-sm font-semibold text-zinc-700 mb-1.5 ml-1">Full Name</label>
-              <input
-                required
-                type="text"
+              <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">姓名</label>
+              <input 
+                type="text" 
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Jane Doe"
-                className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
+                onChange={e => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
+                placeholder="你的称呼"
               />
             </div>
           )}
           <div>
-            <label className="block text-sm font-semibold text-zinc-700 mb-1.5 ml-1">Email Address</label>
-            <input
+            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">邮箱</label>
+            <input 
               required
-              type="email"
+              type="email" 
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
+              onChange={e => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
+              placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-zinc-700 mb-1.5 ml-1">Password</label>
-            <input
+            <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">密码</label>
+            <input 
               required
-              type="password"
+              type="password" 
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-zinc-200 rounded-lg focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
               placeholder="••••••••"
-              className="w-full px-5 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all"
             />
           </div>
-
-          {error && <p className="text-red-500 text-sm font-medium ml-1">{error}</p>}
-
-          <button
-            type="submit"
-            className="w-full py-4 bg-zinc-900 text-white font-bold rounded-xl hover:bg-zinc-800 transition-all shadow-lg hover:shadow-xl mt-4"
+          <button 
+            type="submit" 
+            className="w-full py-3 bg-zinc-900 text-white font-bold rounded-lg hover:bg-zinc-800 transition-all shadow-lg active:scale-[0.98]"
           >
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {isLogin ? '登录' : '注册'}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm text-zinc-500">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-          <button
-            onClick={() => { setIsLogin(!isLogin); setError(''); }}
-            className="text-zinc-900 font-bold hover:underline"
+        <div className="mt-6 text-center">
+          <button 
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError('');
+            }}
+            className="text-sm text-zinc-500 hover:text-zinc-900 font-medium transition-colors"
           >
-            {isLogin ? 'Sign Up' : 'Log In'}
+            {isLogin ? "还没有账号？点击注册" : "已有账号？点击登录"}
           </button>
         </div>
       </div>
