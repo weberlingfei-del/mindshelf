@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { Book, ViewState, User } from '../types';
 
 interface SidebarProps {
@@ -31,18 +29,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-        <button
-          onClick={() => setView('onboarding')}
-          className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-            currentView === 'onboarding' ? 'bg-zinc-200 text-zinc-900' : 'text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900'
-          }`}
-        >
-          <svg className="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Product Info
-        </button>
-
         <button
           onClick={() => setView('shelf')}
           className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
