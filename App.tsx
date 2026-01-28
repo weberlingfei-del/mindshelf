@@ -97,6 +97,15 @@ const App: React.FC = () => {
     setBooks(prev => [book, ...prev]);
   };
 
+  const handleDeleteBook = (id: string) => {
+    setBooks(prev => prev.filter(b => b.id !== id));
+    setNotes(prev => prev.filter(n => n.bookId !== id));
+    if (selectedBookId === id) {
+      setSelectedBookId(null);
+      setView('shelf');
+    }
+  };
+
   const handleAddNote = (content: string, aiInsight?: string) => {
     if (!selectedBookId || !currentUser) return;
     const newNote: Note = {
@@ -108,6 +117,10 @@ const App: React.FC = () => {
       aiInsight
     };
     setNotes(prev => [newNote, ...prev]);
+  };
+
+  const handleUpdateNote = (id: string, newContent: string) => {
+    setNotes(prev => prev.map(n => n.id === id ? { ...n, content: newContent } : n));
   };
 
   const handleDeleteNote = (id: string) => {
@@ -130,6 +143,7 @@ const App: React.FC = () => {
         books={books} 
         selectedBookId={selectedBookId}
         onSelectBook={handleSelectBook}
+        onDeleteBook={handleDeleteBook}
         user={currentUser}
         onLogout={handleLogout}
       />
@@ -142,6 +156,7 @@ const App: React.FC = () => {
             books={books} 
             onSelectBook={handleSelectBook} 
             onAddBook={handleAddBook}
+            onDeleteBook={handleDeleteBook}
           />
         )}
         
@@ -150,13 +165,14 @@ const App: React.FC = () => {
             book={activeBook} 
             notes={activeNotes} 
             onAddNote={handleAddNote}
+            onUpdateNote={handleUpdateNote}
             onDeleteNote={handleDeleteNote}
           />
         )}
 
         {!activeBook && view === 'editor' && (
           <div className="flex flex-col items-center justify-center h-full text-zinc-400">
-            <p className="text-lg">Select a title from your shelf to begin.</p>
+            <p className="text-lg font-medium">Title no longer available.</p>
             <button 
               onClick={() => setView('shelf')}
               className="mt-6 px-6 py-2 bg-zinc-900 text-white rounded-full hover:bg-zinc-800 transition-all shadow-md"

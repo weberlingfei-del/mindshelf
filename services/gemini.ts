@@ -1,34 +1,32 @@
+
 import { GoogleGenAI } from "@google/genai";
 
-// 这里的 API_KEY 会由 Vite 在构建时通过 process.env.API_KEY 注入
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
- * 为给定的笔记内容和书籍背景生成 AI 洞察。
+ * Generates an AI insight for a given note content and book context.
+ * Now handles text-only input to avoid HTML tag confusion.
  */
 export async function generateAIInsight(noteContent: string, bookTitle: string): Promise<string | undefined> {
   try {
+    // Fix: Using gemini-3-flash-preview for basic text tasks.
+    // Fix: Moved persona to systemInstruction for better clarity and performance.
+    // Fix: Simplified contents to a plain string.
+    // Fix: Removed maxOutputTokens to avoid issues when thinkingBudget is not set.
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{
-        parts: [{
-          text: `你是一位资深的读书博主和思想导师。用户正在阅读《${bookTitle}》，并写下了如下笔记：
-          
-          "${noteContent}"
-          
-          请针对这段笔记提供 2-3 句简洁的深度洞察、一个能引发思考的问题，或是一个相关的知识概念，帮助用户深化对这本书的理解。保持语气专业且具有启发性。请直接输出内容，不要包含“好的”、“这是我的建议”等废话。`
-        }]
-      }],
+      contents: `A user is reading "${bookTitle}" and has recorded this insight: "${noteContent}"`,
       config: {
-        temperature: 0.7,
-        topP: 0.9,
-        maxOutputTokens: 300,
+        systemInstruction: "You are a sophisticated literary critic and intellectual mentor. Provide a profound, 2-3 sentence reflection that either expands on the user's idea, connects it to a broader philosophical concept, or poses a challenging follow-up question. Maintain a professional, encouraging, and sophisticated tone. Output only the reflection text without any filler words like 'Here is my thought' or 'As an AI'.",
+        temperature: 0.8,
+        topP: 0.95,
       }
     });
 
+    // Fix: Directly accessing .text property as it is a getter, not a method.
     return response.text;
   } catch (error) {
-    console.error("Gemini API 错误:", error);
+    console.error("Gemini API Error:", error);
     throw error;
   }
 }
